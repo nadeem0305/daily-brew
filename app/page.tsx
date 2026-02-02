@@ -5,6 +5,19 @@ export default async function Home() {
   // 1. Fetch data from Neon (Ordered by newest first)
   const entries = await sql`SELECT * FROM entries ORDER BY created_at DESC`;
 
+  async function deleteEntry(formData: FormData) {
+    "use server";
+    const id = formData.get("id");
+
+    // SQL: DELETE the row where the ID matches
+    await sql`DELETE FROM entries WHERE id = ${id}`;
+
+    // Refresh the page to show the entry is gone
+    // We use revalidatePath to tell Next.js to clear its 'cache'
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/");
+  }
+
   return (
     <main className="min-h-screen bg-stone-50 text-stone-900 p-8">
       <div className="max-w-2xl mx-auto">
@@ -25,10 +38,20 @@ export default async function Home() {
               <div className="flex justify-between items-start mb-4">
                 <span className="text-3xl">{entry.mood}</span>
                 <time className="text-sm text-stone-500">
-                  {new Date(entry.created_at).toLocaleDateString()}
+                  {new Date(entry.created_at).toLocaleDateString("en-US")}
                 </time>
               </div>
               <p className="leading-relaxed text-lg">{entry.content}</p>
+
+              <form action={deleteEntry}>
+                {/* We hide the ID in a secret input so the Action knows which one to kill */}
+                <input type="hidden" name="id" value={entry.id} />
+                <button
+                  type="submit"
+                  className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition">
+                  Delete
+                </button>
+              </form>
             </article>
           ))}
 
