@@ -1,16 +1,24 @@
 import { sql } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 
 export default async function Home() {
+  // get verified user
+  const { userId } = await auth();
+
   // 1. Fetch data from Neon (Ordered by newest first)
-  const entries = await sql`SELECT * FROM entries ORDER BY created_at DESC`;
+  const entries = await sql`
+    SELECT * FROM entries
+    WHERE user_id = ${userId}
+    ORDER BY created_at DESC
+  `;
 
   async function deleteEntry(formData: FormData) {
     "use server";
     const id = formData.get("id");
 
     // SQL: DELETE the row where the ID matches
-    await sql`DELETE FROM entries WHERE id = ${id}`;
+    await sql`DELETE FROM entries WHERE id = ${id} AND user_id = ${userId}`;
 
     // Refresh the page to show the entry is gone
     // We use revalidatePath to tell Next.js to clear its 'cache'

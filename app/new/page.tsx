@@ -1,10 +1,15 @@
 import { sql } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 export default function NewEntryPage() {
   // This is the "Brain" of the form. It runs only on the server.
   async function createEntry(formData: FormData) {
     "use server";
+
+    const { userId } = await auth();
+
+    if (!userId) throw new Error("Not authorised!");
 
     // 1. Grab the data from the form fields
     const content = formData.get("content")?.toString();
@@ -14,7 +19,10 @@ export default function NewEntryPage() {
 
     // 2. Insert it into your Neon database using SQL
     // $1 and $2 are "placeholders" to keep your database safe from hackers
-    await sql`INSERT INTO entries (content, mood) VALUES (${content}, ${mood})`;
+    await sql`
+    INSERT INTO entries (content, mood, user_id)
+    VALUES (${content}, ${mood}, ${userId})
+    `;
 
     // 3. Once saved, send the user back to the homepage
     redirect("/");

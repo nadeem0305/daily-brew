@@ -1,4 +1,5 @@
 import { sql } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 export default async function EditEntryPageById({
@@ -20,13 +21,16 @@ export default async function EditEntryPageById({
   // 2. The Server Action to update the database
   async function updateEntry(formData: FormData) {
     "use server";
+
+    const { userId } = await auth();
+
     const newContent = formData.get("content")?.toString();
     const newMood = formData.get("mood")?.toString();
 
     await sql`
       UPDATE entries 
       SET content = ${newContent}, mood = ${newMood} 
-      WHERE id = ${id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
 
     redirect("/");
