@@ -43,15 +43,24 @@ export default async function Home() {
               </div>
               <p className="leading-relaxed text-lg">{entry.content}</p>
 
-              <form action={deleteEntry}>
-                {/* We hide the ID in a secret input so the Action knows which one to kill */}
-                <input type="hidden" name="id" value={entry.id} />
-                <button
-                  type="submit"
-                  className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition">
-                  Delete
-                </button>
-              </form>
+              <div className="flex gap-4">
+                <Link
+                  href={`/edit/${entry.id}`}
+                  className="text-stone-500 hover:underline">
+                  Edit
+                </Link>
+
+                {/* Your existing Delete form here */}
+                <form action={deleteEntry}>
+                  {/* We hide the ID in a secret input so the Action knows which one to kill */}
+                  <input type="hidden" name="id" value={entry.id} />
+                  <button
+                    type="submit"
+                    className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition">
+                    Delete
+                  </button>
+                </form>
+              </div>
             </article>
           ))}
 
